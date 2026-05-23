@@ -1,0 +1,47 @@
+---
+description: Avoid purple/blue gradients and cool tones as primary UI colors
+alwaysApply: true
+---
+
+# Primary color palette
+
+Do **not** use purple, violet, indigo, or blue (including cyan-teal leaning blue) as **primary** brand, accent, or hero colors. Do **not** use purple-to-blue or blue-to-purple gradients for backgrounds, buttons, links, or key UI surfaces.
+
+## Avoid
+
+- Solid primaries: `#6366f1`, `#8b5cf6`, `#3b82f6`, `#2563eb`, Tailwind `indigo-*`, `violet-*`, `purple-*`, `blue-*` as the main CTA or brand color
+- Gradients: `linear-gradient(..., #6366f1, #8b5cf6)`, `from-indigo-500 to-purple-600`, `bg-gradient-to-r from-blue-600 to-violet-600`
+- Default “AI/SaaS” look: indigo buttons, purple hero blobs, blue-violet mesh backgrounds
+
+## Prefer instead
+
+- **Neutrals** for structure: slate, zinc, stone, warm gray
+- **Warm accents** when color is needed: amber, orange, terracotta, rose (sparingly), emerald/teal only as secondary—not as the main brand hue
+- **High contrast** without cool primaries: black/white, off-white backgrounds, one warm or earth-tone accent
+
+## When implementing UI
+
+1. Choose primary accent from neutrals or warm/earth tones before adding color.
+2. If the user or design system already defines primaries, follow that system—do not substitute indigo/purple/blue.
+3. Links and focus rings: use neutral or warm accent; avoid default browser blue or indigo unless required for accessibility on a specific component.
+4. Illustrations and icons: avoid purple/blue as the dominant fill; use neutrals or palette-aligned accents.
+
+## Examples
+
+```css
+/* ❌ BAD — purple/blue primary */
+.hero { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+.btn-primary { background: #3b82f6; }
+
+/* ✅ GOOD — neutral + warm accent */
+.hero { background: #fafaf9; }
+.btn-primary { background: #c2410c; color: #fff; }
+```
+
+```html
+<!-- ❌ BAD -->
+<button class="bg-indigo-600 hover:bg-indigo-700">Get started</button>
+
+<!-- ✅ GOOD -->
+<button class="bg-stone-900 hover:bg-stone-800 text-white">Get started</button>
+```
