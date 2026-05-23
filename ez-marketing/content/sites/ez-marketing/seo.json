@@ -1,0 +1,37 @@
+{
+  "title": "EZ Marketing | Web Design & Digital Marketing | Lancaster, PA",
+  "description": "Full-service digital marketing agency in Lancaster, PA. Custom websites, SEO, digital marketing, and Google Ads for small businesses nationwide.",
+  "canonical": "https://www.ezmarketing.com",
+  "robots": { "index": true, "follow": true },
+  "openGraph": {
+    "title": "EZ Marketing | Web Design & Digital Marketing",
+    "description": "Custom websites, SEO, and digital marketing that help small businesses get found online.",
+    "type": "website",
+    "siteName": "EZ Marketing"
+  },
+  "twitter": {
+    "card": "summary_large_image",
+    "title": "EZ Marketing | Web Design & Digital Marketing",
+    "description": "Custom websites, SEO, and digital marketing for small businesses."
+  },
+  "jsonLd": {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "EZ Marketing",
+    "url": "https://www.ezmarketing.com",
+    "telephone": "+1-717-291-4689",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "111 Centerville Road",
+      "addressLocality": "Lancaster",
+      "addressRegion": "PA",
+      "postalCode": "17603",
+      "addressCountry": "US"
+    },
+    "parentOrganization": {
+      "@type": "Organization",
+      "name": "EZSolution",
+      "url": "https://www.ezsolution.com"
+    }
+  }
+}
