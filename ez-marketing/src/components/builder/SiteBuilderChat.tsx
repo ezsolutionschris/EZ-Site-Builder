@@ -8,7 +8,6 @@ import { SitePreview } from "./SitePreview";
 import { SuggestedPrompts } from "./SuggestedPrompts";
 
 type Message = { role: "user" | "assistant"; content: string };
-
 type PreviewState = { html?: string; imageUrl?: string };
 
 type ChatResponse = {
@@ -20,7 +19,27 @@ type ChatResponse = {
   status: "generated" | "error";
 };
 
-export function SiteBuilderChat() {
+type DraftSavedPayload = {
+  stitchProjectId: string;
+  html?: string;
+  imageUrl?: string;
+};
+
+type Props = {
+  projectId?: string;
+  stitchProjectId?: string;
+  initialHtml?: string;
+  initialImageUrl?: string;
+  onDraftSaved?: (draft: DraftSavedPayload) => Promise<void>;
+};
+
+export function SiteBuilderChat({
+  projectId,
+  stitchProjectId,
+  initialHtml,
+  initialImageUrl,
+  onDraftSaved,
+}: Props) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -28,69 +47,84 @@ export function SiteBuilderChat() {
       content: `Welcome to ${site.productName}. Tell us about your business and we'll draft a homepage layout you can preview right away.`,
     },
   ]);
-  const [preview, setPreview] = useState<PreviewState>({});
+  const [preview, setPreview] = useState<PreviewState>({
+    html: initialHtml,
+    imageUrl: initialImageUrl,
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   const sessionIdRef = useRef<string | undefined>(undefined);
-  const projectIdRef = useRef<string | undefined>(undefined);
+  const stitchProjectIdRef = useRef<string | undefined>(stitchProjectId);
   const liveRef = useRef<HTMLDivElement>(null);
 
-  const sendMessage = useCallback(async (text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed || loading) return;
+  const sendMessage = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed || loading) return;
 
-    setError(null);
-    setMessages((prev) => [...prev, { role: "user", content: trimmed }]);
-    setInput("");
-    setLoading(true);
+      setError(null);
+      setMessages((prev) => [...prev, { role: "user", content: trimmed }]);
+      setInput("");
+      setLoading(true);
 
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: trimmed,
-          sessionId: sessionIdRef.current,
-          projectId: projectIdRef.current,
-        }),
-      });
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: trimmed,
+            sessionId: sessionIdRef.current,
+            projectId: stitchProjectIdRef.current,
+          }),
+        });
 
-      const data = (await res.json()) as ChatResponse;
+        const data = (await res.json()) as ChatResponse;
 
-      if (!res.ok) {
-        throw new Error(data.error ?? "Failed to generate draft");
+        if (!res.ok) {
+          throw new Error(data.error ?? "Failed to generate draft");
+        }
+
+        if (data.sessionId) sessionIdRef.current = data.sessionId;
+        if (data.projectId) stitchProjectIdRef.current = data.projectId;
+
+        if (data.preview) setPreview(data.preview);
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content:
+              data.reply ??
+              "Your draft is ready. Review the preview and send another message to refine it.",
+          },
+        ]);
+
+        if (onDraftSaved && data.projectId) {
+          await onDraftSaved({
+            stitchProjectId: data.projectId,
+            html: data.preview?.html,
+            imageUrl: data.preview?.imageUrl,
+          });
+        }
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : "Something went wrong. Try again.";
+        setError(msg);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: `${msg} You can also schedule a consultation with ${site.name} for hands-on help.`,
+          },
+        ]);
+      } finally {
+        setLoading(false);
+        liveRef.current?.focus();
       }
-
-      if (data.sessionId) sessionIdRef.current = data.sessionId;
-      if (data.projectId) projectIdRef.current = data.projectId;
-
-      if (data.preview) setPreview(data.preview);
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content:
-            data.reply ??
-            "Your draft is ready. Review the preview and send another message to refine it.",
-        },
-      ]);
-    } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "Something went wrong. Try again.";
-      setError(msg);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: `${msg} You can also schedule a consultation with ${site.name} for hands-on help.`,
-        },
-      ]);
-    } finally {
-      setLoading(false);
-      liveRef.current?.focus();
-    }
-  }, [loading]);
+    },
+    [loading, onDraftSaved],
+  );
 
   return (
     <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
@@ -125,9 +159,7 @@ export function SiteBuilderChat() {
         ) : null}
 
         <SuggestedPrompts
-          onSelect={(p) => {
-            setInput(p);
-          }}
+          onSelect={(p) => setInput(p)}
           disabled={loading}
         />
 
