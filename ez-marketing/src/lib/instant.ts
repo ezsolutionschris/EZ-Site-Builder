@@ -1,7 +1,4 @@
-git add src/lib/instant.ts
-
-
- { init } from "@instantdb/react";
+import { init } from "@instantdb/react";
  
 const APP_ID = "44ec6d65-370b-442e-ab41-c7dafe23ad05";
  
@@ -20,4 +17,4 @@ export type Schema = {
   projects: Project;
 };
  
-export const db = init<Schema>({ appId: APP_ID });
+export const db = init({ appId: APP_ID });
