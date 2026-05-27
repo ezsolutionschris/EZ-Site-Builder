@@ -1,5 +1,4 @@
 import "server-only";
-
 import { stitch, StitchError } from "@google/stitch-sdk";
 
 export type SiteDraftResult = {
@@ -28,11 +27,9 @@ async function resolveProject(
 ): Promise<{ projectId: string; project: ReturnType<typeof stitch.project> }> {
   const envProjectId = process.env.STITCH_PROJECT_ID?.trim();
   const projectId = existingProjectId ?? envProjectId;
-
   if (projectId) {
     return { projectId, project: stitch.project(projectId) };
   }
-
   const created = await stitch.createProject("EZ Site Builder");
   return {
     projectId: created.projectId,
@@ -57,19 +54,25 @@ export async function generateSiteDraft(
 
   const { projectId, project } = await resolveProject(options?.projectId);
 
-  const screen = await project.generate(
-    `Create a professional small-business website homepage. ${prompt}. Use a clean, modern layout with clear headings, a hero section, and a contact call to action. Device: desktop.`,
-    "DESKTOP",
-  );
+  // Generate a full multi-page site by default
+  const fullPrompt = `Create a complete professional small-business website. ${prompt}.
+Use a clean, modern layout with consistent design across all pages.
+Generate a full homepage with: hero section, services/features, about section, and contact call to action.
+Include clear headings, professional typography, and a cohesive color scheme.
+Device: desktop.`;
+
+  const screen = await project.generate(fullPrompt, "DESKTOP");
 
   const htmlUrl = await screen.getHtml();
   const imageUrl = await screen.getImage();
 
+  // Prefer HTML — it renders crisp at any size unlike the screenshot
   const html =
     typeof htmlUrl === "string" ? await fetchHtmlFromUrl(htmlUrl) : null;
 
   return {
     html,
+    // Still return imageUrl as fallback but HTML is now primary
     imageUrl: typeof imageUrl === "string" ? imageUrl : null,
     projectId,
     screenId: screen.screenId,
