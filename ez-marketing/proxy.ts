@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 const PROTECTED_PREFIXES = ["/dashboard", "/builder"];
 const INSTANT_TOKEN_COOKIE = "instant-token";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isProtected = PROTECTED_PREFIXES.some((prefix) =>
