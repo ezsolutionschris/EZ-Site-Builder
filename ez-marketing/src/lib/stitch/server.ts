@@ -16,7 +16,8 @@ async function fetchHtmlFromUrl(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(30_000) });
     if (!res.ok) return null;
-    return await res.text();
+    const text = await res.text();
+    return text.length > 0 ? text : null;
   } catch {
     return null;
   }
@@ -54,25 +55,35 @@ export async function generateSiteDraft(
 
   const { projectId, project } = await resolveProject(options?.projectId);
 
-  // Generate a full multi-page site by default
-  const fullPrompt = `Create a complete professional small-business website. ${prompt}.
-Use a clean, modern layout with consistent design across all pages.
-Generate a full homepage with: hero section, services/features, about section, and contact call to action.
-Include clear headings, professional typography, and a cohesive color scheme.
-Device: desktop.`;
+  const fullPrompt = `Design a complete professional business website UI for desktop.
+Do NOT generate any photographs or real images.
+Use placeholder colored blocks or icons for images.
+Business description: ${prompt}
+Requirements:
+- Full webpage layout with HTML and CSS
+- Navigation bar with logo and menu links
+- Hero section with headline and call-to-action button
+- Services or features section
+- About section
+- Contact section with phone and address
+- Footer
+Use a clean modern design with professional typography and a cohesive color scheme.`;
 
   const screen = await project.generate(fullPrompt, "DESKTOP");
 
   const htmlUrl = await screen.getHtml();
   const imageUrl = await screen.getImage();
 
-  // Prefer HTML — it renders crisp at any size unlike the screenshot
-  const html =
-    typeof htmlUrl === "string" ? await fetchHtmlFromUrl(htmlUrl) : null;
+  console.log("htmlUrl type:", typeof htmlUrl, "value:", htmlUrl);
+
+  let html: string | null = null;
+  if (typeof htmlUrl === "string" && htmlUrl.startsWith("http")) {
+    html = await fetchHtmlFromUrl(htmlUrl);
+    console.log("fetched html length:", html?.length ?? "null");
+  }
 
   return {
     html,
-    // Still return imageUrl as fallback but HTML is now primary
     imageUrl: typeof imageUrl === "string" ? imageUrl : null,
     projectId,
     screenId: screen.screenId,
