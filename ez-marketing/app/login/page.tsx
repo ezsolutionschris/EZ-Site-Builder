@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/instant';
 import { site } from '@/lib/site';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function LoginPage() {
           </span>
         </div>
         <db.SignedIn>
-          <AlreadySignedIn onDashboard={() => router.replace('/dashboard')} />
+          <AlreadySignedIn />
         </db.SignedIn>
         <db.SignedOut>
           {!sentEmail ? (
@@ -32,16 +33,16 @@ export default function LoginPage() {
   );
 }
 
-function AlreadySignedIn({ onDashboard }: { onDashboard: () => void }) {
+function AlreadySignedIn() {
   return (
     <div className="flex flex-col gap-3 text-center">
       <p className="text-sm text-stone-600 dark:text-stone-400">You're already signed in.</p>
-      <button
-        onClick={onDashboard}
-        className="rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-amber-700"
+      <Link
+        href="/dashboard"
+        className="rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-amber-700 text-center"
       >
         Go to Dashboard
-      </button>
+      </Link>
     </div>
   );
 }
