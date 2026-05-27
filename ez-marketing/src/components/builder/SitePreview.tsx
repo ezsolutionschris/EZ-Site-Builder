@@ -26,18 +26,16 @@ export function SitePreview({ html, imageUrl }: SitePreviewProps) {
           Draft preview
         </p>
       </div>
-      <div className="relative flex-1 overflow-hidden bg-stone-50 dark:bg-stone-950">
+      <div className="relative flex-1 overflow-hidden bg-white">
         {html ? (
-          // HTML iframe is the primary preview — renders crisp at any size
           <iframe
             title="Generated site preview"
             srcDoc={html}
-            sandbox="allow-same-origin"
-            className="w-full border-0 bg-white"
+            sandbox="allow-scripts allow-same-origin"
+            className="w-full border-0"
             style={{ height: "600px" }}
           />
         ) : imageUrl ? (
-          // Fallback to image if no HTML
           <img
             src={imageUrl}
             alt="Generated website screenshot"
